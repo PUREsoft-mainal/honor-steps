@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>THE HONOR</title>
+  <link rel="stylesheet" href="/App.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="user-info-bar">
+      <div class="stats-container">
+        <span id="reg-users">المسجلين: جاري التحميل...</span>
+        <span id="act-users">النشطين: جاري التحميل...</span>
+      </div>
+      <div class="logo-container">
+        <img class="logo-img" src="/logo.png" onerror="this.style.display='none'">
+        <h1>THE HONOR</h1>
+      </div>
+      <div class="user-profile-side">
+        <div style="display: flex; flex-direction: column; text-align: left; margin-left: 10px;">
+          <strong>مصطفى البحيرى</strong>
+          <span class="uid-span">ID: 1991-0611</span>
+        </div>
+        <div class="avatar-frame" id="top-avatar"></div>
+      </div>
+    </div>
+    <div class="admin-announcement-bar" id="announcement">📢 جاري جلب إعلانات الأدمن...</div>
+    <div style="text-align: center; padding: 5px; color: #ccff00; font-weight: bold; text-shadow: var(--neon-yellow); background: rgba(0,0,0,0.2); display: none;" id="banking-balance-wrapper">
+      💰 الرصيد الحالي للمنصة: <span id="platform-global-balance">0</span> جنيه مصري
+    </div>
+    <div class="navigation-buttons-bar">
+      <button class="nav-btn btn-gold" onclick="openModal('profile')">الملف الشخصي</button>
+      <button class="nav-btn btn-purple" onclick="openModal('chat')">غرف المحادثة</button>
+      <button class="nav-btn btn-blue" onclick="openModal('banking')">الأعمال البنكية</button>
+    </div>
+  </header>
+  <main class="feed-layout">
+        <!-- صندوق النشر المطور لدعم المنشورات النصية والوسائط (صور وفيديوهات) -->
+        <div class="post-box" style="border-color: #ffd700; box-shadow: var(--neon-gold);">
+          <textarea id="post-text" placeholder="بماذا تفكر الآن لتنشره في ساحة الشرف؟" style="width:100%; background:transparent; color:#fff; border:1px solid #bf55ec; padding:10px; border-radius:5px; height:60px; resize:none; box-sizing: border-box;"></textarea>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+            <!-- أزرار رفع الوسائط المتعددة (صور أو فيديو) -->
+            <div style="display: flex; gap: 10px;">
+              <label class="file-upload-icon-label" style="border-color: #19b5fe; color: #19b5fe; font-size: 11px; padding: 5px 10px;" title="إدراج صورة للمنشور">
+                🖼️ صورة
+                <input type="file" id="post-media-image" style="display:none;" accept="image/*" onchange="previewPostMedia('image')">
+              </label>
+              <label class="file-upload-icon-label" style="border-color: #bf55ec; color: #bf55ec; font-size: 11px; padding: 5px 10px;" title="إدراج فيديو للمنشور">
+                🎬 فيديو
+                <input type="file" id="post-media-video" style="display:none;" accept="video/*" onchange="previewPostMedia('video')">
+              </label>
+            </div>
+            
+            <button onclick="addPost()" style="background:#ffd700; border:none; color:#060b19; padding:8px 25px; font-weight:bold; border-radius:4px; cursor:pointer;">نشر الشرف</button>
+          </div>
+          
+          <!-- مؤشر صامت لمعاينة اسم الملف المرفق قبل النشر -->
+          <div id="post-media-preview-status" style="margin-top: 8px; font-size: 11px; color: #fef160; display: none;"></div>
+        </div>
+        <div id="news-feed"></div>
+
+  </main>
+
+  <div class="popup-overlay" id="overlay" onclick="closeModal()"></div>
+  <div class="floating-window" id="modal">
+    
+    <!-- الملف الشخصي والمفكرة -->
+    <div id="modal-profile-content" style="display:none;">
+      <h2 style="color:#ffd700; margin-top:0; text-shadow: var(--neon-gold);">الملف الشخصي الملكي</h2>
+      <div class="profile-header-grid">
+        <div class="upload-avatar-zone" id="profile-avatar-view" onclick="triggerAvatarUpload()"><div class="upload-hint">تغيير الصورة</div></div>
+        <input type="file" id="avatar-file-input" style="display:none;" accept="image/*" onchange="processAvatar(this)">
+        <div class="user-meta-fields">
+          <span style="font-size:18px; font-weight:bold; color:#19b5fe;">الاسم: مصطفى البحيرى</span>
+          <span style="color:#fef160;">الرقم التعريفي: ID: 1991-0611</span>
+          <span style="font-size:13px; color:#aaa;">الرتبة: مؤسس المنصة الأساسي</span>
+        </div>
+      </div>
+      <div class="notepad-section">
+        <h3 style="color:#19b5fe; margin-top:0; font-size:16px;">🔐 مفكرة الحسابات وكلمات المرور</h3>
+        <div class="notepad-inputs">
+          <input type="text" id="acc-title" placeholder="اسم الموقع / التطبيق"><input type="text" id="acc-pass" placeholder="كلمة المرور المسجلة">
+        </div>
+        <button class="notepad-btn" onclick="saveAccountAccount()">تشفير وحفظ في المفكرة</button>
+        <div class="accounts-list" id="saved-accounts-box"></div>
+      </div>
+    </div>
+    <!-- غرف المحادثة والمراسلة المتطورة -->
+    <div id="modal-chat-content" style="display:none;">
+      <h2 style="color:#bf55ec; margin-top:0; text-shadow: var(--neon-purple);">غرف المحادثة والاتصال المشترك</h2>
+      <div class="chat-container-layout">
+        <div class="search-user-wrapper"><input type="text" id="user-search-field" placeholder="ابحث عن صديق بالاسم أو الـ ID..." oninput="executeUserSearch()"></div>
+        <div class="chat-main-grid">
+          <div class="chat-sidebar-favorites">
+            <span style="font-size:11px; color:#ffd700; display:block; margin-bottom:8px; font-weight:bold;">📌 المفضلة / المجموعات</span>
+            <div id="favorites-users-list"></div><hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;">
+            <span style="font-size:11px; color:#19b5fe; display:block; margin-bottom:8px; font-weight:bold;">👥 أصدقاء بالمنصة</span>
+            <div id="search-results-users-list"></div>
+          </div>
+          <div class="chat-window-view">
+            <div class="chat-active-header"><strong style="color:#ffd700;" id="active-chat-title">المحادثة العامة للشبكة</strong><button class="pin-toggle-btn" id="pin-current-chat-btn" onclick="togglePinCurrentRoom()">📌</button></div>
+            <div class="messages-scrollable-area" id="chat-messages-box"></div>
+            <div class="chat-inputs-control-bar">
+              <label class="file-upload-icon-label">📎 ملف<input type="file" id="chat-file-attachment" style="display:none;" onchange="handleChatFileAttach(this)"></label>
+              <input type="text" id="chat-message-input" placeholder="اكتب رسالة أو الصق رابط موقع..."><button class="chat-send-action-btn" onclick="sendNewChatMessage()">إرسال</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- بوابة المعاملات والأعمال البنكية والمحاسبة الفاخرة -->
+    <div id="modal-banking-content" style="display:none;">
+      <h2 style="color:#19b5fe; margin-top:0; text-shadow: var(--neon-blue); text-align:center;">💼 بوابة المعاملات والأعمال البنكية</h2>
+      <div style="display:flex; gap:10px; margin-bottom:15px; background:rgba(0,0,0,0.3); padding:5px; border-radius:5px;">
+        <button onclick="switchBankingTab('loans')" style="flex:1; background:#060b19; color:#fff; border:1px solid #ffd700; padding:6px; cursor:pointer; font-weight:bold; border-radius:3px;">💵 القروض</button>
+        <button onclick="switchBankingTab('installments')" style="flex:1; background:#060b19; color:#fff; border:1px solid #bf55ec; padding:6px; cursor:pointer; font-weight:bold; border-radius:3px;">📅 الأقساط</button>
+        <button onclick="switchBankingTab('invoices')" style="flex:1; background:#060b19; color:#fff; border:1px solid #ccff00; padding:6px; cursor:pointer; font-weight:bold; border-radius:3px;">🧾 الفواتير الإلكترونية</button>
+      </div>
+      <div id="bank-tab-loans">
+        <h4 style="color:#ffd700; margin:5px 0 10px 0;">حاسبة وعقود القروض الاستثمارية</h4>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+          <input type="text" id="loan-client-name" placeholder="اسم العميل"><input type="number" id="loan-amount" placeholder="مبلغ القرض الكلي" oninput="calculateLoanData()">
+          <input type="number" id="loan-interest" placeholder="نسبة الفائدة %" oninput="calculateLoanData()"><input type="number" id="loan-months" placeholder="فترة السداد (بالشهور)" oninput="calculateLoanData()">
+          <input type="number" id="user-percentage" placeholder="نسبة المستخدم من الفائدة %" oninput="calculateLoanData()">
+              <!-- خانة إدخال تاريخ أول قسط النيون المحدثة -->
+              <input type="date" id="loan-first-date" placeholder="تاريخ سداد أول قسط" style="grid-column: span 2; background:#060b19; border:1px solid #ffd700; color:#fff; padding:8px; border-radius:4px;" onchange="calculateLoanData()">
+
+        </div>
+        <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:5px; font-size:13px; border-right:3px solid #ffd700; margin-bottom:10px;">
+          <div>الناتج الإجمالي بالفائدة: <span id="loan-total-output" style="color:#ffd700; font-weight:bold;">0</span> ج.م</div>
+          <div>مبلغ القسط الشهري المالي: <span id="loan-month-output" style="color:#19b5fe; font-weight:bold;">0</span> ج.م</div>
+          <div>عمولتك المضافة للرصيد: <span id="user-share-output" style="color:#ccff00; font-weight:bold;">0</span> ج.م</div>
+              <div style="margin-top: 3px; color: #fef160; text-shadow: var(--neon-yellow);">تاريخ سداد آخر قسط: <span id="loan-final-date-output" style="font-weight:bold;">---</span></div>
+
+        </div>
+        <button onclick="executeAndSaveLoan()" style="background:#ffd700; color:#000; border:none; padding:8px; font-weight:bold; border-radius:4px; width:100%; cursor:pointer;">💾 تنفيذ وحفظ العقد البنكي</button>
+      </div>
+      <div id="bank-tab-installments" style="display:none;">
+        <h4 style="color:#bf55ec; margin:5px 0 10px 0;">كشوفات الحسابات والأقساط النشطة</h4>
+        <div id="installments-report-capture" style="background:#0a1128; padding:12px; border:1px solid #bf55ec; border-radius:5px; max-height:220px; overflow-y:auto; font-size:12px;"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
+          <button onclick="exportInstallments('print')" style="background:#19b5fe; color:#000; border:none; padding:6px; font-weight:bold; border-radius:3px; cursor:pointer;">🖨️ طباعة الكشف</button>
+          <button onclick="exportInstallments('txt')" style="background:#fff; color:#000; border:none; padding:6px; font-weight:bold; border-radius:3px; cursor:pointer;">📄 حفظ ملف نصي TXT</button>
+          <button onclick="exportInstallments('pdf')" style="background:#f22613; color:#fff; border:none; padding:6px; font-weight:bold; border-radius:3px; cursor:pointer;">📕 تصدير PDF</button>
+          <button onclick="exportInstallments('image')" style="background:#ccff00; color:#000; border:none; padding:6px; font-weight:bold; border-radius:3px; cursor:pointer;">🖼️ حفظ كصورة</button>
+        </div>
+      </div>
+          <!-- قسم 3 المطور: الفواتير الإلكترونية الحرة بالمرونة الكاملة -->
+          <div id="bank-tab-invoices" style="display:none;">
+            <h4 style="color:#ccff00; margin:5px 0 10px 0;">نظام الفواتير الإلكترونية الرقمي الحر المعتمد</h4>
+            
+            <!-- حقول التحكم والمدخلات المرنة للفاتورة -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; font-size:12px; background:rgba(0,0,0,0.2); padding:10px; border-radius:5px; border:1px solid #ccff00;">
+              <input type="text" id="inv-input-client" placeholder="اسم الجهة الصادر لها الفاتورة" oninput="liveUpdateInvoice()">
+              <input type="text" id="inv-input-subject" placeholder="بيان الخدمة أو التمويل" oninput="liveUpdateInvoice()">
+              <input type="number" id="inv-input-base" placeholder="المبلغ الأساسي (ج.م)" oninput="liveUpdateInvoice()">
+              <input type="number" id="inv-input-interest" placeholder="نسبة الزيادة / الضريبة %" oninput="liveUpdateInvoice()">
+              
+              <label style="display:flex; align-items:center; gap:5px;">
+                <input type="checkbox" id="toggle-company-logo" onchange="liveUpdateInvoice()"> إدراج شعارك الشخصي
+              </label>
+              <label style="display:flex; align-items:center; gap:5px;">
+                <input type="checkbox" id="toggle-bank-logo" onchange="liveUpdateInvoice()"> إدراج شعار المنصة الملكي
+              </label>
+              <input type="text" id="inv-custom-comp-logo" placeholder="رابط لوجو شركة مخصص (اختياري)" style="grid-column: span 2;" oninput="liveUpdateInvoice()">
+              <input type="text" id="inv-custom-bank-logo" placeholder="رابط لوجو بنك مخصص (اختياري)" style="grid-column: span 2;" oninput="liveUpdateInvoice()">
+            </div>
+
+            <!-- تصميم الفاتورة على أعلى مستوى نظام النيون الملكي الشفاف -->
+            <div id="invoice-luxury-template" style="background:rgba(255,255,255,0.03); border:1px dashed #ccff00; border-radius:6px; padding:15px; font-size:12px; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <div id="inv-logo-comp-placeholder" style="width:60px; height:45px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; border-radius:3px; color:#aaa; overflow:hidden;">شركة</div>
+                <div style="text-align:center;"><strong style="color:#ccff00; font-size:14px;">فاتورة ضريبية إلكترونية</strong><br><span style="font-size:10px; color:#aaa;">رقم الفاتورة: <span id="invoice-random-number-span">---</span></span></div>
+                <div id="inv-logo-bank-placeholder" style="width:60px; height:45px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; border-radius:3px; color:#aaa; overflow:hidden;">البنك</div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px; background:rgba(0,0,0,0.3); padding:8px; border-radius:4px; margin-bottom:10px;">
+                <div>الجهة المصدر لها: <span id="inv-preview-name" style="color:#ffd700; font-weight:bold;">---</span></div>
+                <div>تاريخ المعاملة المعتمد: <span id="invoice-current-date-span">---</span></div>
+              </div>
+              <table style="width:100%; border-collapse:collapse; text-align:center; font-size:11px;">
+                <thead>
+                  <tr style="background:rgba(25, 181, 254, 0.2); color:#19b5fe;"><th style="padding:5px; border:1px solid #333;">البيان</th><th style="border:1px solid #333;">المبلغ الأساسي</th><th style="border:1px solid #333;">الإجمالي المالي</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td id="inv-table-subject-view" style="padding:5px; border:1px solid #333; color:#ccc;">---</td><td id="inv-table-base" style="border:1px solid #333;">0 ج.م</td><td id="inv-table-total" style="border:1px solid #333; color:#ccff00; font-weight:bold;">0 ج.م</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+    <div id="modal-general-content" style="display:none;"><h3 id="modal-title" style="color:#ffd700; margin-top:0;"></h3><p id="modal-desc" style="color:#ccc; font-size:14px;"></p></div>
+    <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">
+    <button onclick="closeModal()" style="background:#f22613; color:#fff; border:none; padding:8px 20px; border-radius:4px; cursor:pointer; font-weight:bold; box-shadow:var(--neon-red);">إغلاق التبويب</button>
+  </div>
+  <script src="/App.js"></script>
+</body>
+</html>
+
