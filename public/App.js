@@ -412,3 +412,107 @@ function closeModal() {
   if(ouroInvContent) ouroInvContent.style.display = 'none';
 }
 window.onload = function() { renderPosts(); applyLoadedAvatar(localStorage.getItem('honor_user_avatar')); };
+
+let ouroInvoiceItems = [{ id: 1, name: "", qty: 1, price: 0 }];
+let ouroCompanyLogoBase64 = "";
+
+function handleOuroLogoUpload(input) {
+  const file = input.files ? input.files[0] : null;
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      ouroCompanyLogoBase64 = e.target.result;
+      document.getElementById('ouro-logo-status-check').style.display = "inline";
+      liveUpdateOuroInvoice();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function addOuroInvoiceRow() {
+  ouroInvoiceItems.push({ id: Date.now(), name: "", qty: 1, price: 0 });
+  buildOuroDynamicInputs();
+  liveUpdateOuroInvoice();
+}
+
+function removeOuroInvoiceRow(id) {
+  if (ouroInvoiceItems.length > 1) {
+    ouroInvoiceItems = ouroInvoiceItems.filter(function(item) { return item.id !== id; });
+    buildOuroDynamicInputs();
+    liveUpdateOuroInvoice();
+  }
+}
+
+function updateOuroItemField(id, field, value) {
+  ouroInvoiceItems = ouroInvoiceItems.map(function(item) {
+    if (item.id === id) {
+      let updated = Object.assign({}, item);
+      updated[field] = value;
+      return updated;
+    }
+    return item;
+  });
+  liveUpdateOuroInvoice();
+}
+
+function buildOuroDynamicInputs() {
+  const container = document.getElementById('ouro-dynamic-items-container'); if(!container) return;
+  let html = "";
+  for(let i = 0; i < ouroInvoiceItems.length; i++) {
+    let item = ouroInvoiceItems[i];
+    html += '<div style="display:flex; gap:5px; align-items:center;">' +
+      '<input type="text" placeholder="اسم الصنف/الخدمة..." value="' + item.name + '" oninput="updateOuroItemField(' + item.id + ',\'name\', this.value)" style="flex:2; padding:5px; background:#111; color:#fff; border:1px solid #333; border-radius:4px; font-size:11px;">' +
+      '<input type="number" placeholder="الكمية" min="1" value="' + item.qty + '" oninput="updateOuroItemField(' + item.id + ',\'qty\', parseInt(this.value)||0)" style="width:45px; padding:5px; background:#111; color:#fff; border:1px solid #333; border-radius:4px; font-size:11px;">' +
+      '<input type="number" placeholder="السعر" min="0" value="' + item.price + '" oninput="updateOuroItemField(' + item.id + ',\'price\', parseFloat(this.value)||0)" style="width:65px; padding:5px; background:#111; color:#fff; border:1px solid #333; border-radius:4px; font-size:11px;">' +
+      '<button type="button" onclick="removeOuroInvoiceRow(' + item.id + ')" style="background:#c0392b; color:#fff; border:none; border-radius:4px; padding:5px 7px; cursor:pointer; font-size:11px;">×</button>' +
+    '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function liveUpdateOuroInvoice() {
+  const compName = document.getElementById('inv-comp-name-inp').value.trim() || "اسم الشركة المصدرة...";
+  const compAddr = document.getElementById('inv-comp-addr-inp').value.trim() || "العنوان غير محدد...";
+  const clientName = document.getElementById('inv-client-name-inp').value.trim() || "................................................";
+  const invType = document.getElementById('inv-type-select').value;
+  const taxRate = parseFloat(document.getElementById('inv-tax-inp').value) || 0;
+  const discount = parseFloat(document.getElementById('inv-discount-inp').value) || 0;
+
+  document.getElementById('inv-preview-comp-name').innerText = compName;
+  document.getElementById('inv-preview-comp-addr').innerText = "📍 المقر: " + compAddr;
+  document.getElementById('inv-preview-client-target').innerText = clientName;
+  document.getElementById('inv-preview-type-title').innerText = invType;
+
+  const logoShell = document.getElementById('inv-preview-logo-shell');
+  if (ouroCompanyLogoBase64) { logoShell.innerHTML = '<img src="' + ouroCompanyLogoBase64 + '" style="width:45px; height:45px; object-fit:contain; border-radius:4px;">'; } 
+  else { logoShell.innerHTML = '💼'; }
+
+  let subTotal = 0;
+  const tableBody = document.getElementById('ouro-invoice-table-body-view'); let tableHtml = "";
+  for(let i = 0; i < ouroInvoiceItems.length; i++) {
+    let item = ouroInvoiceItems[i]; let rowTotal = (item.qty * item.price); subTotal += rowTotal;
+    tableHtml += '<tr><td style="border:1px solid rgba(255,255,255,0.05); padding:6px;">' + (item.name || "صنف تجريبي معلق...") + '</td><td style="border:1px solid rgba(255,255,255,0.05); padding:6px; text-align:center;">' + item.qty + '</td><td style="border:1px solid rgba(255,255,255,0.05); padding:6px; text-align:center;">' + item.price.toFixed(2) + '</td><td style="border:1px solid rgba(255,255,255,0.05); padding:6px; text-align:center; color:#ffd700;">' + rowTotal.toFixed(2) + '</td></tr>';
+  }
+  if(tableBody) tableBody.innerHTML = tableHtml;
+
+  const taxAmount = subTotal * (taxRate / 100);
+  const finalTotal = Math.max(0, subTotal + taxAmount - discount);
+  document.getElementById('inv-preview-subtotal').innerText = subTotal.toFixed(2);
+  document.getElementById('inv-preview-taxamount').innerText = "+" + taxAmount.toFixed(2);
+  document.getElementById('inv-preview-discountamount').innerText = "-" + discount.toFixed(2);
+  document.getElementById('inv-preview-grandtotal').innerText = finalTotal.toFixed(2) + " جنية مصري";
+
+  if (document.getElementById('inv-preview-date-span').innerText === '---') {
+    document.getElementById('inv-preview-date-span').innerText = new Date().toLocaleDateString('ar-EG');
+    document.getElementById('inv-preview-ref-id').innerText = "#" + Date.now().toString().slice(-6);
+  }
+}
+function exportOuroToPDF() { window.print(); }
+function exportOuroToImage() { alert("📷 لحفظ الكشف كصورة بدقة HD، يمكنك استخدام اختصار نظام منت (Alt + PrintScreen) لتصوير النافذة الحالية فوراً!"); }
+function exportOuroToDoc() {
+  const htmlContent = document.getElementById('ouroPrintedInvoiceZone').innerHTML;
+  const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href = url; a.download = 'مستند_فواتير_OURO_' + Date.now().toString().slice(-4) + '.doc'; a.click();
+}
+function printOuroInvoice() { window.print(); }
