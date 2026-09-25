@@ -385,13 +385,30 @@ function exportInstallments(t) {
 }
 
 function openModal(t) {
-  const m = document.getElementById('modal'); const o = document.getElementById('overlay'); const p = document.getElementById('modal-profile-content'); const c = document.getElementById('modal-chat-content'); const b = document.getElementById('modal-banking-content'); const w = document.getElementById('banking-balance-wrapper');
-  p.style.display = 'none'; c.style.display = 'none'; b.style.display = 'none'; w.style.display = 'none';
-  if(t === 'profile') { p.style.display = 'block'; renderAccounts(); }
-  else if(t === 'chat') { c.style.display = 'block'; executeUserSearch(); renderFavoritesList(); renderChatMessages(); }
-  else if(t === 'banking') { b.style.display = 'block'; w.style.display = 'block'; updateBalanceDisplay(); switchBankingTab('loans'); }
-  m.style.display = 'block'; o.style.display = 'block';
+  const m = document.getElementById('modal'); const o = document.getElementById('overlay'); 
+  const p = document.getElementById('modal-profile-content'); const c = document.getElementById('modal-chat-content'); 
+  const b = document.getElementById('modal-banking-content'); const w = document.getElementById('banking-balance-wrapper');
+  // استدعاء التبويب الخارجي الجديد المعزول للفواتير
+  const ouroInvContent = document.getElementById('modal-ouro-invoices-content');
+  
+  if(p) p.style.display = 'none'; if(c) c.style.display = 'none'; 
+  if(b) b.style.display = 'none'; if(w) w.style.display = 'none';
+  if(ouroInvContent) ouroInvContent.style.display = 'none';
+  
+  if(t === 'profile') { if(p) p.style.display = 'block'; renderAccounts(); }
+  else if(t === 'chat') { if(c) c.style.display = 'block'; executeUserSearch(); renderFavoritesList(); renderChatMessages(); }
+  else if(t === 'banking') { if(b) b.style.display = 'block'; if(w) w.style.display = 'block'; updateBalanceDisplay(); switchBankingTab('loans'); }
+  else if(t === 'ouro_invoices') {
+    if(ouroInvContent) ouroInvContent.style.display = 'flex';
+    buildOuroDynamicInputs();
+    liveUpdateOuroInvoice();
+  }
+  if(m) m.style.display = 'block'; if(o) o.style.display = 'block';
 }
-function closeModal() { document.getElementById('modal').style.display = 'none'; document.getElementById('overlay').style.display = 'none'; }
-
+function closeModal() { 
+  if(document.getElementById('modal')) document.getElementById('modal').style.display = 'none'; 
+  if(document.getElementById('overlay')) document.getElementById('overlay').style.display = 'none'; 
+  const ouroInvContent = document.getElementById('modal-ouro-invoices-content');
+  if(ouroInvContent) ouroInvContent.style.display = 'none';
+}
 window.onload = function() { renderPosts(); applyLoadedAvatar(localStorage.getItem('honor_user_avatar')); };
