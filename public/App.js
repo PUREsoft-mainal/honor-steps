@@ -86,11 +86,27 @@ function addPost() {
   renderPosts();
 }
 
+function triggerAvatarUpload() { 
+  document.getElementById('avatar-file-input').click(); 
+}
+
+function processAvatar(inp) {
+  if (inp.files && inp.files[0]) {
+    const r = new FileReader();
+    r.onload = function(e) { 
+      localStorage.setItem('honor_user_avatar', e.target.result); 
+      applyLoadedAvatar(e.target.result); 
+    };
+    r.readAsDataURL(inp.files[0]);
+  }
+}
 
 function applyLoadedAvatar(d) {
-  if(d) {
-    const topAv = document.getElementById('top-avatar'); if(topAv) topAv.style.backgroundImage = 'url(' + d + ')';
-    const v = document.getElementById('profile-avatar-view'); if(v) v.style.backgroundImage = 'url(' + d + ')';
+  if (d) {
+    const topAv = document.getElementById('top-avatar'); 
+    if (topAv) topAv.style.backgroundImage = "url('" + d + "')";
+    const v = document.getElementById('profile-avatar-view'); 
+    if (v) v.style.backgroundImage = "url('" + d + "')";
   }
 }
 
@@ -379,4 +395,3 @@ function openModal(t) {
 function closeModal() { document.getElementById('modal').style.display = 'none'; document.getElementById('overlay').style.display = 'none'; }
 
 window.onload = function() { renderPosts(); applyLoadedAvatar(localStorage.getItem('honor_user_avatar')); };
-
